@@ -1,0 +1,286 @@
+using System;
+using System.IO;
+using System.Windows.Forms;
+
+
+namespace ConsoleApp1
+{
+    internal class Program
+    {
+
+        public static void stop_sql()
+        {
+
+            //================ Para o Serviço do SQL =============================================================
+            System.Diagnostics.Process process = new System.Diagnostics.Process();
+            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+            startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            startInfo.FileName = "cmd.exe";
+            startInfo.Arguments = "/c NET STOP MSSQL$SQLEXPRESSPOS4";
+            process.StartInfo.Verb = "runas";
+            process.StartInfo = startInfo;
+            process.Start();
+        }
+
+
+        public static void start_sql()
+        {
+
+            //================ Inicia o Serviço do SQL =============================================================
+            System.Diagnostics.Process process2 = new System.Diagnostics.Process();
+            System.Diagnostics.ProcessStartInfo startInfo2 = new System.Diagnostics.ProcessStartInfo();
+            startInfo2.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            startInfo2.FileName = "cmd.exe";
+            startInfo2.Arguments = "/c NET START MSSQL$SQLEXPRESSPOS4";
+            process2.StartInfo.Verb = "runas";
+            process2.StartInfo = startInfo2;
+            process2.Start();
+
+        }
+
+        public static void extrair_base()
+        {
+
+            //================ Extrair base Zero =============================================================
+            System.Diagnostics.Process process2 = new System.Diagnostics.Process();
+            System.Diagnostics.ProcessStartInfo startInfo2 = new System.Diagnostics.ProcessStartInfo();
+           // startInfo2.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            startInfo2.FileName = "cmd.exe";
+            startInfo2.Arguments = "/c \"C:/Suporte Microvix/BasezeroPOS5.zip\"";
+            process2.StartInfo.Verb = "runas";
+            process2.StartInfo = startInfo2;
+            process2.Start();
+
+            MessageBox.Show("Continuar! ");
+
+        }
+
+        private static void Main(string[] args)
+        {
+
+            stop_sql();
+
+            //========================= Fix =============================================================
+            try
+            {
+
+                string nomeuser = Environment.UserName;
+
+                //Fix
+                Directory.Delete(@"C:\\Users\\" + nomeuser + "\\AppData\\Local\\Linx_Sistemas_e_Consultor", true);
+            }
+            catch
+            {
+
+            }
+
+
+            //================ Downloads Base Zero ====================================
+
+
+
+            string folder = @"C:\\Suporte Microvix\\BasezeroPOS5";
+
+            //Se o diretório não existir...
+
+            if (!Directory.Exists(folder))
+            {
+
+                //    //Criamos um com o nome folder
+                Directory.CreateDirectory(folder);
+
+
+                // Obtendo URL do arquivo a ser baixado e caminho de destino
+                // do mesmo
+                string urlArquivo = "https://www.dropbox.com/s/mny58iv2f2d887t/POS_data_log.ldf?dl=1";
+                string caminhoArquivo = @"C:\\Suporte Microvix\\BasezeroPOS5\\POS_data_log.ldf";
+
+                // Outras instruções de código...
+
+                // Efetuando o download
+                System.Net.WebClient client = new System.Net.WebClient();
+                client.DownloadFile(urlArquivo, caminhoArquivo);
+
+
+
+
+
+                // Obtendo URL do arquivo a ser baixado e caminho de destino
+                // do mesmo
+                string urlArquivo2 = "https://www.dropbox.com/s/tknq8n0krg1wert/POS_data.mdf?dl=1";
+                string caminhoArquivo2 = @"C:\\Suporte Microvix\\BasezeroPOS5\\POS_data.mdf";
+
+                // Outras instruções de código...
+
+                // Efetuando o download
+                System.Net.WebClient client2 = new System.Net.WebClient();
+                client.DownloadFile(urlArquivo2, caminhoArquivo2);
+
+
+            }
+            
+
+
+
+            if (Directory.Exists(@"C:\\Program Files (x86)\\Linx Sistemas\\"))
+            {
+
+
+                string Backup = @"C:\\Program Files (x86)\\Linx Sistemas\\Backup Database\\Backup\\";
+
+                //Se o diretório não existir...
+
+                if (!Directory.Exists(Backup))
+                {
+
+                    //Criamos um com o nome folder
+                    Directory.CreateDirectory(Backup);
+
+                }
+
+
+
+                DateTime dta = DateTime.Now;
+                string dtaStr = dta.ToString("dd" + "-" + "MM" + "-" + "yyyy" + "  " + "HH" + "-" + "mm"); //data formatada to string
+                string dtaStr2 = dta.ToString("dd" + "-" + "MM" + "-" + "yyyy" + "  " + "HH" + "-" + "mm" + "-" + "ss"); //data formatada to string
+                string subPath = @"C:\\Program Files (x86)\\Linx Sistemas\\Backup Database\\Backup " + dtaStr; // Seu codigo com a data e hora vai aqui
+                //Directory.CreateDirectory(subPath);
+
+                try
+                {
+                    // ===================== Faz o Backup da base atual ============================================================
+                    string Arquivo_Orig = @"C:\Program Files (x86)\Linx Sistemas\Linx Microvix POS\POS_data.mdf";
+                    string Pasta_Dest = @"C:\\Program Files (x86)\\Linx Sistemas\\Backup Database\\Backup\\POS_data.mdf";
+                    File.Move(Arquivo_Orig, Pasta_Dest);
+
+                    string Arquivo_Orig2 = @"C:\Program Files (x86)\Linx Sistemas\Linx Microvix POS\POS_data_log.ldf";
+                    string Pasta_Dest2 = @"C:\\Program Files (x86)\\Linx Sistemas\\Backup Database\\Backup\\POS_data_log.ldf";
+                    File.Move(Arquivo_Orig2, Pasta_Dest2);
+                }
+                catch
+                {
+                    MessageBox.Show(@"Não foi possível fazer o backup DB na pasta Linx Microvix POS. Verifica se o arquivo existe no diretório.   C:\Program Files (x86)\Linx Sistemas\Linx Microvix POS");
+
+
+                }
+
+
+                try
+                {
+                    Directory.Move(@"C:\Program Files (x86)\Linx Sistemas\Backup Database\Backup\", @"C:\Program Files (x86)\Linx Sistemas\Backup Database\Backup " + dtaStr);
+                }
+                catch
+                {
+
+                    Directory.Move(@"C:\Program Files (x86)\Linx Sistemas\Backup Database\Backup\", @"C:\Program Files (x86)\Linx Sistemas\Backup Database\Backup " + dtaStr2);
+                }
+
+                
+
+
+                try
+                {
+                    //=============== Copia a base zero das pasta C: \Suporte Microvix ============================================
+                    string basemdf_Orig = @"C:\\Suporte Microvix\\BasezeroPOS5\\POS_data.mdf";
+                    string basemdf_Dest = @"C:\\Program Files (x86)\\Linx Sistemas\\Linx Microvix POS\\POS_data.mdf";
+                    File.Copy(basemdf_Orig, basemdf_Dest);
+
+                    string baseldf_Orig = @"C:\\Suporte Microvix\\BasezeroPOS5\\POS_data_log.ldf";
+                    string baseldf_Dest = @"C:\\Program Files (x86)\\Linx Sistemas\\Linx Microvix POS\\POS_data_log.ldf";
+                    File.Copy(baseldf_Orig, baseldf_Dest);
+                }
+                catch
+                {
+
+                    MessageBox.Show(@"Não foi possível encontrar nova DB em: C:/Suporte Microvix");
+
+                }
+
+            }
+            else
+            {
+
+                string Backup = @"C:\\Program Files\\Linx Sistemas\\Backup Database\\Backup\\";
+
+                //Se o diretório não existir...
+
+                if (!Directory.Exists(Backup))
+                {
+
+                    //Criamos um com o nome folder
+                    Directory.CreateDirectory(Backup);
+                }
+
+                DateTime dta = DateTime.Now;
+                string dtaStr = dta.ToString("dd" + "-" + "MM" + "-" + "yyyy" + "  " + "HH" + "-" + "mm"); //data formatada to string
+                string dtaStr2 = dta.ToString("dd" + "-" + "MM" + "-" + "yyyy" + "  " + "HH" + "-" + "mm" + "-"+"ss"); //data formatada to string
+                string subPath = @"C:\\Program Files\\Linx Sistemas\\Backup Database\\Backup " + dtaStr; // Seu codigo com a data e hora vai aqui
+
+                try
+                {
+                    // ===================== Faz o Backup da base atual ============================================================
+                    string Arquivo_Orig = @"C:\\Program Files\\Linx Sistemas\\Linx Microvix POS\\POS_data.mdf";
+                    string Pasta_Dest = @"C:\\Program Files\\Linx Sistemas\\Backup Database\\Backup\\POS_data.mdf";
+                    File.Move(Arquivo_Orig, Pasta_Dest);
+
+                    string Arquivo_Orig2 = @"C:\\Program Files\\Linx Sistemas\\Linx Microvix POS\\POS_data_log.ldf";
+                    string Pasta_Dest2 = @"C:\\Program Files\\Linx Sistemas\\Backup Database\\Backup\\POS_data_log.ldf";
+                    File.Move(Arquivo_Orig2, Pasta_Dest2);
+
+                }
+                catch
+                {
+                    MessageBox.Show(@"Não foi possível fazer o backup DB na pasta Linx Microvix POS. Verifica se o arquivo existe no diretório.   C:\Program Files\Linx Sistemas\Linx Microvix POS");
+
+                }
+
+
+                try
+                { 
+                Directory.Move(@"C:\Program Files\Linx Sistemas\Backup Database\Backup\", @"C:\Program Files\Linx Sistemas\Backup Database\Backup " + dtaStr);
+                }
+                catch
+                {
+
+                    Directory.Move(@"C:\Program Files\Linx Sistemas\Backup Database\Backup\", @"C:\Program Files\Linx Sistemas\Backup Database\Backup " + dtaStr2);
+                }
+
+
+                try
+                {
+                    //=============== Copia a base zero das pasta C: \Suporte Microvix ============================================
+                    string basemdf_Orig = @"C:\\Suporte Microvix\\BasezeroPOS5\\POS_data.mdf";
+                    string basemdf_Dest = @"C:\\Program Files\\Linx Sistemas\\Linx Microvix POS\\POS_data.mdf";
+                    File.Copy(basemdf_Orig, basemdf_Dest);
+
+                    string baseldf_Orig = @"C:\\Suporte Microvix\\BasezeroPOS5\\POS_data_log.ldf";
+                    string baseldf_Dest = @"C:\\Program Files\\Linx Sistemas\\Linx Microvix POS\\POS_data_log.ldf";
+                    File.Copy(baseldf_Orig, baseldf_Dest);
+                }
+                catch
+                {
+
+                    MessageBox.Show(@"Não foi possível encontrar nova DB em: C:/Suporte Microvix");
+
+                }
+
+
+
+            }
+
+            
+
+
+            MessageBox.Show(@"O Script foi concluído com sucesso!");
+
+
+            start_sql();
+
+            // Abrir a pasta do FIX
+            string nomeuser2 = Environment.UserName;
+            //Directory.Delete(@"C:\\Users\\" + nomeuser + "\\AppData\\Local\\Linx_Sistemas_e_Consultor", true);
+            System.Diagnostics.Process.Start(@"C:\\Users\\" + nomeuser2 + "\\AppData\\Local\\");
+            
+        }
+    }
+}
